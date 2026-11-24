@@ -83,6 +83,7 @@ def test_tracking(client, product, checkout):
     assert r.status_code == 200
     assert r.json()["events"][0]["status"] == "pending"
     assert track("rp-00001", "98 4123 4567").status_code == 200
+    assert track("RP-00001", "+977 984-1234567").status_code == 200
     assert track("RP-00001", "9800000000").status_code == 404
     for number in ["RP-00002", "nonsense", "RP-99999999999999999999", "RP-²"]:
         assert track(number, "9841234567").status_code == 404

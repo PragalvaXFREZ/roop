@@ -38,16 +38,23 @@ def make_token(admin_id: int) -> str:
     return jwt.encode({"sub": str(admin_id), "exp": expires}, settings.jwt_secret, "HS256")
 
 
-def limit_login(request: Request) -> None:
-    """Stop more than LOGIN_LIMIT attempts from one address in LOGIN_WINDOW seconds."""
-    key = request.client.host if request.client else "unknown"
-    now = time.monotonic()
-    tries = _attempts[key]
-    while tries and now - tries[0] > LOGIN_WINDOW:
+# The limit counts failed attempts for each email.
+# All requests come through the web proxy, so the client address is the same for all staff.
+def check_login_limit(email: str) -> None:
+    """Stop sign-in after LOGIN_LIMIT failed attempts in LOGIN_WINDOW seconds."""
+    tries = _attempts[email]
+    while tries and time.monotonic() - tries[0] > LOGIN_WINDOW:
         tries.popleft()
     if len(tries) >= LOGIN_LIMIT:
         raise HTTPException(429, "Too many attempts. Wait one minute.")
-    tries.append(now)
+
+
+def record_failed_login(email: str) -> None:
+    _attempts[email].append(time.monotonic())
+
+
+def clear_failed_logins(email: str) -> None:
+    _attempts.pop(email, None)
 
 
 def current_admin(request: Request, db: Session = Depends(get_db)) -> AdminUser:

@@ -180,7 +180,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       typeof detail === "string"
         ? detail
         : Array.isArray(detail)
-          ? detail.map((d: { msg: string }) => d.msg).join(". ")
+          ? detail.map((d: { loc: string[]; msg: string }) => `${d.loc.at(-1)}: ${d.msg}`).join(". ")
           : "Something went wrong. Try again.";
     throw new ApiError(res.status, message);
   }

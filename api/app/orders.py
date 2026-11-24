@@ -79,7 +79,8 @@ def place_order(db: Session, data: OrderIn) -> Order:
             raise HTTPException(400, "An item in your cart is no longer available")
         if variant.stock < qty:
             name = variant.product.name
-            raise HTTPException(409, f"Only {variant.stock} left of {name} ({variant.size})")
+            left = f"Only {variant.stock} left of" if variant.stock else "Sold out:"
+            raise HTTPException(409, f"{left} {name} ({variant.size}, {variant.color})")
         variant.stock -= qty
         order.items.append(
             OrderItem(

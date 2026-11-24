@@ -52,9 +52,9 @@ def test_login(client, admin):
     assert "httponly" in cookie.lower()
     assert client.get("/api/admin/me").json()["email"] == ADMIN_EMAIL
 
-    for _ in range(3):
-        login("wrong")
-    # This is the sixth attempt in one minute.
+    # A good sign-in clears the failed attempts. Five new failures then stop sign-in.
+    for _ in range(5):
+        assert login("wrong").status_code == 401
     assert login(ADMIN_PASSWORD).status_code == 429
 
 

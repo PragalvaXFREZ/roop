@@ -13,7 +13,15 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
-from app.auth import COOKIE, check_password, current_admin, limit_login, make_token
+from app.auth import (
+    COOKIE,
+    check_login_limit,
+    check_password,
+    clear_failed_logins,
+    current_admin,
+    make_token,
+    record_failed_login,
+)
 from app.config import settings
 from app.db import get_db
 from app.models import (
@@ -56,11 +64,15 @@ MAX_IMAGE_BYTES = 5 * 1024 * 1024
 # Sign-in
 
 
-@router.post("/login", response_model=AdminOut, dependencies=[Depends(limit_login)])
+@router.post("/login", response_model=AdminOut)
 def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
-    admin = db.scalar(select(AdminUser).where(AdminUser.email == data.email.lower()))
+    email = data.email.lower()
+    check_login_limit(email)
+    admin = db.scalar(select(AdminUser).where(AdminUser.email == email))
     if not admin or not check_password(data.password, admin.password_hash):
+        record_failed_login(email)
         raise HTTPException(401, "Email or password is wrong")
+    clear_failed_logins(email)
     response.set_cookie(
         COOKIE,
         make_token(admin.id),

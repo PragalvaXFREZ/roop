@@ -25,8 +25,14 @@ Email = Annotated[EmailStr, AfterValidator(str.lower)]
 
 
 def clean_phone(value: str) -> str:
-    """Remove spaces and dashes. Keep a leading plus. Reject numbers that are too short or long."""
+    """
+    Remove spaces and dashes. Keep a leading plus.
+    Remove the Nepal code 977 from a 13-digit number, so that both forms match.
+    Reject numbers that are too short or too long.
+    """
     digits = re.sub(r"\D", "", value)
+    if len(digits) == 13 and digits.startswith("977"):
+        return digits[3:]
     if not 7 <= len(digits) <= 15:
         raise ValueError("Enter a valid phone number")
     return ("+" if value.strip().startswith("+") else "") + digits
