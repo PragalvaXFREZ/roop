@@ -35,7 +35,7 @@ npm install
 
 ```bash
 cd api && uv run pytest -q && uv run ruff check .
-cd web && npm run lint && npm run build
+cd ../web && npm run lint && npm run build
 ```
 
 ## Rules
@@ -49,5 +49,5 @@ cd web && npm run lint && npm run build
 ## Production notes
 
 - Set a long random `JWT_SECRET` and `COOKIE_SECURE=true`.
-- Set `API_URL` for the web server if the API is not at `http://127.0.0.1:8000`.
+- Set `API_URL` before `npm run build` if the API is not at `http://127.0.0.1:8000`. The build writes the API address into the proxy rules.
 - Back up the database file, or use Postgres.

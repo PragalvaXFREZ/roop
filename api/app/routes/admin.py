@@ -103,12 +103,9 @@ def dashboard(db: Session = Depends(get_db)):
     local = datetime.now(ZoneInfo(settings.timezone))
     midnight = local.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    def utc(moment: datetime) -> datetime:
-        return moment.astimezone(UTC).replace(tzinfo=None)
-
-    today = utc(midnight)
-    week = utc(midnight - timedelta(days=midnight.weekday()))
-    month = utc(midnight.replace(day=1))
+    today = naive_utc(midnight)
+    week = naive_utc(midnight - timedelta(days=midnight.weekday()))
+    month = naive_utc(midnight.replace(day=1))
 
     def count_since(start: datetime) -> int:
         return db.scalar(select(func.count(Order.id)).where(Order.created_at >= start))
@@ -153,14 +150,19 @@ def list_orders(
             match.append(Order.id == number)
         query = query.where(or_(*match))
     if date_from:
-        query = query.where(Order.created_at >= date_from)
+        query = query.where(Order.created_at >= naive_utc(date_from))
     if date_to:
-        query = query.where(Order.created_at < date_to)
+        query = query.where(Order.created_at < naive_utc(date_to))
     total = db.scalar(select(func.count()).select_from(query.subquery()))
     rows = db.scalars(
         query.order_by(Order.created_at.desc()).offset((max(page, 1) - 1) * 25).limit(25)
     ).all()
     return OrderPage(items=[OrderRow.model_validate(o) for o in rows], total=total)
+
+
+def naive_utc(moment: datetime) -> datetime:
+    """Change a time to UTC without a time zone, as the database keeps it."""
+    return moment.astimezone(UTC).replace(tzinfo=None) if moment.tzinfo else moment
 
 
 def get_order(db: Session, order_id: int) -> Order:
