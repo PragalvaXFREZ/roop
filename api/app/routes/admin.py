@@ -247,10 +247,11 @@ def get_product(db: Session, product_id: int) -> Product:
 
 def save_product(db: Session, product: Product, data: ProductIn) -> Product:
     """Copy the form data to the product. Keep variants by id, add new ones, remove the rest."""
+    # Load the variants first. A later load flushes the new slug before the try block.
+    current = {v.id: v for v in product.variants}
     fields = data.model_dump(exclude={"variants"})
     for field, value in fields.items():
         setattr(product, field, value)
-    current = {v.id: v for v in product.variants}
     kept = []
     for item in data.variants:
         variant = current.get(item.id) if item.id else None
