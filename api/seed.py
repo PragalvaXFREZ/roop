@@ -2,17 +2,22 @@
 Load sample data.
 
 This script adds one admin user, the categories and about twelve products.
+It also adds photos from seed_images/ to each sample product that has no photo.
 Run it after the migrations: uv run python seed.py
-The script does not add products again if products exist.
+The script does not add products again if products exist. Thus, you can run it again safely.
 The admin email and password come from SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD.
 """
+
+import shutil
+import uuid
+from pathlib import Path
 
 from sqlalchemy import func, select
 
 from app.auth import hash_password
 from app.config import settings
 from app.db import SessionLocal
-from app.models import AdminUser, Category, Product, ProductVariant
+from app.models import AdminUser, Category, Product, ProductImage, ProductVariant
 
 CATEGORIES = {"kurtas": "Kurtas", "shirts": "Shirts", "dresses": "Dresses", "shawls": "Shawls"}
 
@@ -106,7 +111,7 @@ PRODUCTS = [
         "Handloom cotton",
         ["Ochre", "Black"],
         ["S", "M", "L"],
-        False,
+        True,
     ),
     (
         "Prayer Flag Dress",
@@ -147,6 +152,11 @@ DESCRIPTION = (
 CARE = "Hand wash cold. Dry in shade. Iron on the reverse side."
 
 
+PHOTOS = Path(__file__).parent / "seed_images"
+# Each product gets its own photo, then one embroidery close-up for the gallery.
+DETAILS = ["rose", "bouquet", "flower", "black", "lace", "vase"]
+
+
 def slugify(name: str) -> str:
     return name.lower().replace(" ", "-")
 
@@ -165,32 +175,51 @@ def seed() -> None:
             print(f"Added admin {email}")
 
         if db.scalar(select(func.count(Product.id))):
-            db.commit()
             print("Products exist. Skipped products.")
-            return
-
-        categories = {slug: Category(slug=slug, name=name) for slug, name in CATEGORIES.items()}
-        db.add_all(categories.values())
-        for name, cat, rupees, embroidery, fabric, colors, sizes, featured in PRODUCTS:
-            db.add(
-                Product(
-                    name=name,
-                    slug=slugify(name),
-                    description=DESCRIPTION,
-                    embroidery=embroidery,
-                    fabric=fabric,
-                    care=CARE,
-                    price=rupees * 100,
-                    category=categories[cat],
-                    is_published=True,
-                    is_featured=featured,
-                    variants=[
-                        ProductVariant(size=s, color=c, stock=4) for c in colors for s in sizes
-                    ],
-                )
-            )
+        else:
+            add_products(db)
+        add_photos(db)
         db.commit()
-        print(f"Added {len(CATEGORIES)} categories and {len(PRODUCTS)} products")
+
+
+def add_products(db) -> None:
+    categories = {slug: Category(slug=slug, name=name) for slug, name in CATEGORIES.items()}
+    db.add_all(categories.values())
+    for name, cat, rupees, embroidery, fabric, colors, sizes, featured in PRODUCTS:
+        db.add(
+            Product(
+                name=name,
+                slug=slugify(name),
+                description=DESCRIPTION,
+                embroidery=embroidery,
+                fabric=fabric,
+                care=CARE,
+                price=rupees * 100,
+                category=categories[cat],
+                is_published=True,
+                is_featured=featured,
+                variants=[ProductVariant(size=s, color=c, stock=4) for c in colors for s in sizes],
+            )
+        )
+    db.flush()
+    print(f"Added {len(CATEGORIES)} categories and {len(PRODUCTS)} products")
+
+
+def add_photos(db) -> None:
+    """Copy the sample photos to the upload folder. Skip products that have photos."""
+    settings.upload_dir.mkdir(parents=True, exist_ok=True)
+    added = 0
+    for i, product in enumerate(db.scalars(select(Product).order_by(Product.id))):
+        main = PHOTOS / f"{product.slug}-1.jpg"
+        if product.images or not main.exists():
+            continue
+        detail = PHOTOS / f"detail-{DETAILS[i % len(DETAILS)]}.jpg"
+        for position, source in enumerate([main, detail]):
+            name = f"{uuid.uuid4().hex}.jpg"
+            shutil.copyfile(source, settings.upload_dir / name)
+            product.images.append(ProductImage(url=f"/api/uploads/{name}", position=position))
+        added += 1
+    print(f"Added photos to {added} product(s)")
 
 
 if __name__ == "__main__":
