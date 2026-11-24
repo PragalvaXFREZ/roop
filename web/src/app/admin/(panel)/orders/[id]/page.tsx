@@ -6,7 +6,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { api, STATUS_FLOW, STATUS_LABEL, type OrderDetail, type OrderStatus } from "@/lib/api";
 import { money } from "@/lib/config";
 import { Notes } from "@/components/admin/notes";
@@ -121,6 +121,8 @@ function StatusControl({ order, onChange }: { order: OrderDetail; onChange: Chan
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // Next.js keeps the state of a hidden page. Close the confirm step when staff leave the page.
+  useLayoutEffect(() => () => setConfirm(false), []);
 
   const final = FINAL.includes(order.status);
   const next = final ? undefined : STATUS_FLOW[STATUS_FLOW.indexOf(order.status) + 1];

@@ -17,7 +17,8 @@ export default function LoginPage() {
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
+    const formElement = e.currentTarget;
+    const form = new FormData(formElement);
     setBusy(true);
     setError("");
     try {
@@ -25,11 +26,13 @@ export default function LoginPage() {
         method: "POST",
         body: JSON.stringify({ email: form.get("email"), password: form.get("password") }),
       });
+      // Next.js keeps this page hidden after sign-in. Clear it for the next sign-in.
+      formElement.reset();
       router.replace("/admin");
     } catch (err) {
       setError((err as Error).message);
-      setBusy(false);
     }
+    setBusy(false);
   }
 
   return (

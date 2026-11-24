@@ -6,7 +6,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { api, type AdminProduct, type Category, type ProductIn } from "@/lib/api";
 import { useLoad } from "./use-load";
 import { button, danger, Field, input, primary } from "./ui";
@@ -23,15 +23,9 @@ function slugify(name: string): string {
     .replace(/^-|-$/g, "");
 }
 
-function toRows(product?: AdminProduct): Row[] {
-  if (!product) return [{ size: "", color: "", stock: "0" }];
-  return product.variants.map((v) => ({ ...v, stock: String(v.stock) }));
-}
-
-export function ProductForm({ product }: { product?: AdminProduct }) {
-  const router = useRouter();
-  const { data: categories } = useLoad<Category[]>("/api/admin/categories");
-  const [form, setForm] = useState({
+/* Get the form fields of a product. Without a product, get empty fields. */
+function toFields(product?: AdminProduct) {
+  return {
     name: product?.name ?? "",
     slug: product?.slug ?? "",
     description: product?.description ?? "",
@@ -42,8 +36,19 @@ export function ProductForm({ product }: { product?: AdminProduct }) {
     category_id: product?.category_id ? String(product.category_id) : "",
     is_published: product?.is_published ?? false,
     is_featured: product?.is_featured ?? false,
-  });
-  const [rows, setRows] = useState(toRows(product));
+  };
+}
+
+function toRows(product?: AdminProduct): Row[] {
+  if (!product) return [{ size: "", color: "", stock: "0" }];
+  return product.variants.map((v) => ({ ...v, stock: String(v.stock) }));
+}
+
+export function ProductForm({ product }: { product?: AdminProduct }) {
+  const router = useRouter();
+  const { data: categories } = useLoad<Category[]>("/api/admin/categories");
+  const [form, setForm] = useState(() => toFields(product));
+  const [rows, setRows] = useState(() => toRows(product));
   const [images, setImages] = useState(product?.images ?? []);
   // The slug follows the name until staff edit the slug. An existing product keeps its slug.
   const [slugEdited, setSlugEdited] = useState(Boolean(product));
@@ -51,6 +56,8 @@ export function ProductForm({ product }: { product?: AdminProduct }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Next.js keeps the state of a hidden page. Close the confirm step when staff leave the page.
+  useLayoutEffect(() => () => setConfirmDelete(false), []);
 
   function bind(key: Text) {
     return {
@@ -90,16 +97,25 @@ export function ProductForm({ product }: { product?: AdminProduct }) {
         stock: Number(r.stock),
       })),
     };
-    run(async () => {
-      const init = { method: product ? "PUT" : "POST", body: JSON.stringify(body) };
-      const saved = await api<AdminProduct>(
-        `/api/admin/products${product ? `/${product.id}` : ""}`,
-        init,
-      );
-      if (!product) return router.replace(`/admin/products/${saved.id}`);
-      // New variant rows get their id from the API. Keep the ids for the next save.
-      setRows(toRows(saved));
-    }, "Saved.");
+    run(
+      async () => {
+        const init = { method: product ? "PUT" : "POST", body: JSON.stringify(body) };
+        const saved = await api<AdminProduct>(
+          `/api/admin/products${product ? `/${product.id}` : ""}`,
+          init,
+        );
+        if (!product) {
+          // The hidden "new" page keeps its state. Empty the form for the next product.
+          setForm(toFields());
+          setRows(toRows());
+          setSlugEdited(false);
+          return router.replace(`/admin/products/${saved.id}`);
+        }
+        // New variant rows get their id from the API. Keep the ids for the next save.
+        setRows(toRows(saved));
+      },
+      product ? "Saved." : "",
+    );
   }
 
   function upload(e: React.ChangeEvent<HTMLInputElement>) {
