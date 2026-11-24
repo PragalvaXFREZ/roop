@@ -1,7 +1,7 @@
 /*
  * Admin frame: navigation, the signed-in admin and the sign-out button.
- * The frame asks the API for the current admin first.
- * It shows the page only after the API accepts the session.
+ * The frame asks the API for the current admin. A 401 response opens the sign-in page.
+ * The frame shows the page at the same time. The page data needs the session too.
  */
 "use client";
 
@@ -10,7 +10,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { api, type Admin } from "@/lib/api";
 import { BRAND } from "@/lib/config";
 import { useLoad } from "./use-load";
-import { Wait } from "./ui";
 
 const LINKS = [
   { href: "/admin", label: "Dashboard" },
@@ -20,17 +19,9 @@ const LINKS = [
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
-  const { data: admin, error } = useLoad<Admin>("/api/admin/me");
+  const { data: admin } = useLoad<Admin>("/api/admin/me");
   const pathname = usePathname();
   const router = useRouter();
-
-  if (!admin) {
-    return (
-      <div className="p-4">
-        <Wait error={error} />
-      </div>
-    );
-  }
 
   async function signOut() {
     await api("/api/admin/logout", { method: "POST" });
@@ -57,7 +48,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-3 text-sm md:mt-auto md:ml-0 md:flex-col md:items-start md:gap-1">
-          <span className="text-muted">{admin.name}</span>
+          <span className="text-muted">{admin?.name}</span>
           <button onClick={signOut} className="text-ink underline underline-offset-2">
             Sign out
           </button>
