@@ -1,0 +1,35 @@
+/*
+ * Site theme.
+ * Use these tokens in all pages. Do not add new colours in components.
+ * The look is quiet and warm. Photographs of the embroidery give the colour.
+ */
+@import "tailwindcss";
+
+:root {
+  --paper: #f7f3ec;
+  --surface: #fffdf9;
+  --ink: #2a2420;
+  --muted: #7a6f66;
+  --line: #e4dcd0;
+  --accent: #7c2d23;
+  --accent-ink: #fffdf9;
+  --danger: #a1301f;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
