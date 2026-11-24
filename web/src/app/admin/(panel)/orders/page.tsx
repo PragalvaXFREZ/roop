@@ -97,7 +97,7 @@ export default function OrdersPage() {
           <OrderTable orders={data.items} />
           <div className="mt-3 flex items-center gap-3 text-sm">
             <span className="text-muted">
-              {data.total} orders. Page {page} of {pages}.
+              {data.total} {data.total === 1 ? "order" : "orders"}. Page {page} of {pages}.
             </span>
             {page > 1 && (
               <Link href={pageLink(page - 1)} className={button}>
