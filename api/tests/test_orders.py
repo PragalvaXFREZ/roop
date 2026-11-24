@@ -56,13 +56,13 @@ def test_unavailable_variant(client, product, hidden, checkout, which):
     assert r.status_code == 400
 
 
-# Match a customer by phone first, then by email.
+# Match a customer by phone first, then by email in any letter case.
 def test_customer_dedupe(admin_client, product, checkout):
     med, large = product.variants
     line = [{"variant_id": med.id, "quantity": 1}]
     checkout(line, phone="9841234567", email="asha@example.com")
     checkout(line, phone="98 4123 4567")
-    checkout(line, phone="9800000000", email="asha@example.com", name="Asha R.")
+    checkout(line, phone="9800000000", email="Asha@Example.com", name="Asha R.")
     checkout([{"variant_id": large.id, "quantity": 1}], phone="9811111111")
 
     customers = admin_client.get("/api/admin/customers").json()
@@ -84,5 +84,5 @@ def test_tracking(client, product, checkout):
     assert r.json()["events"][0]["status"] == "pending"
     assert track("rp-00001", "98 4123 4567").status_code == 200
     assert track("RP-00001", "9800000000").status_code == 404
-    assert track("RP-00002", "9841234567").status_code == 404
-    assert track("nonsense", "9841234567").status_code == 404
+    for number in ["RP-00002", "nonsense", "RP-99999999999999999999", "RP-²"]:
+        assert track(number, "9841234567").status_code == 404

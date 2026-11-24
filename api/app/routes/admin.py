@@ -27,7 +27,7 @@ from app.models import (
     ProductVariant,
     now,
 )
-from app.orders import set_status
+from app.orders import order_id, set_status
 from app.schemas import (
     AdminOut,
     AdminProduct,
@@ -127,10 +127,10 @@ def list_orders(
         query = query.where(Order.status == status)
     if q:
         term = f"%{q.strip()}%"
-        number = q.strip().upper().removeprefix("RP-")
+        number = order_id(q)
         match = [Order.name.ilike(term), Order.phone.ilike(term), Order.email.ilike(term)]
-        if number.isdigit():
-            match.append(Order.id == int(number))
+        if number:
+            match.append(Order.id == number)
         query = query.where(or_(*match))
     if date_from:
         query = query.where(Order.created_at >= date_from)
@@ -247,6 +247,8 @@ def get_product(db: Session, product_id: int) -> Product:
 
 def save_product(db: Session, product: Product, data: ProductIn) -> Product:
     """Copy the form data to the product. Keep variants by id, add new ones, remove the rest."""
+    if data.category_id and not db.get(Category, data.category_id):
+        raise HTTPException(400, "Category not found")
     # Load the variants first. A later load flushes the new slug before the try block.
     current = {v.id: v for v in product.variants}
     fields = data.model_dump(exclude={"variants"})

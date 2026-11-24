@@ -20,6 +20,9 @@ def _as_utc(value: datetime) -> datetime:
 
 UTCTime = Annotated[datetime, AfterValidator(_as_utc)]
 
+# Keep emails in lower case. Thus, the same email matches the same customer.
+Email = Annotated[EmailStr, AfterValidator(str.lower)]
+
 
 def clean_phone(value: str) -> str:
     """Remove spaces and dashes. Keep a leading plus. Reject numbers that are too short or long."""
@@ -89,7 +92,7 @@ class OrderItemIn(BaseModel):
 class OrderIn(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     phone: str
-    email: EmailStr | None = None
+    email: Email | None = None
     address: str = Field(min_length=5, max_length=500)
     city: str = Field(min_length=2, max_length=80)
     note: str = Field(default="", max_length=1000)
@@ -185,7 +188,7 @@ class OrderPage(BaseModel):
 class OrderContactIn(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     phone: str
-    email: EmailStr | None = None
+    email: Email | None = None
     address: str = Field(min_length=5, max_length=500)
     city: str = Field(min_length=2, max_length=80)
 

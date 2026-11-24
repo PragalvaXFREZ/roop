@@ -46,6 +46,9 @@ def test_product_crud(admin_client, client, product, checkout):
     )
     assert r.status_code == 409
 
+    body = product_body("new-slug") | {"category_id": 99}
+    assert admin_client.post("/api/admin/products", json=body).status_code == 400
+
     # Old orders keep their lines when staff delete the product.
     checkout([{"variant_id": product.variants[0].id, "quantity": 1}])
     assert admin_client.delete(f"/api/admin/products/{product.id}").status_code == 204

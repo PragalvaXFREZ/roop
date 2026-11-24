@@ -87,6 +87,15 @@ def test_final_status_is_locked(admin_client, order, final):
     assert admin_client.get("/api/admin/orders/1").json()["status"] == final
 
 
+@pytest.mark.parametrize(
+    "q,found",
+    [("rp-00001", 1), ("1", 1), ("asha", 1), ("asha@example", 1), ("99999999999999999999", 0)],
+)
+def test_order_search(admin_client, order, q, found):
+    r = admin_client.get("/api/admin/orders", params={"q": q})
+    assert r.json()["total"] == found
+
+
 def test_edit_contact(admin_client, order):
     contact = {
         "name": "Asha Gurung",

@@ -7,6 +7,8 @@ Stock increases again when staff cancel the order.
 Delivered and cancelled orders are final. Staff cannot change their status.
 """
 
+import re
+
 from fastapi import HTTPException
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -23,6 +25,14 @@ from app.models import (
 from app.schemas import OrderIn
 
 FINAL = {OrderStatus.DELIVERED, OrderStatus.CANCELLED}
+# Nine digits or fewer fit in every database integer column.
+NUMBER = re.compile(r"(?:RP-)?([0-9]{1,9})", re.IGNORECASE)
+
+
+def order_id(number: str) -> int | None:
+    """Read the order id from "RP-00042", "rp-42" or "42". Return None for other text."""
+    match = NUMBER.fullmatch(number.strip())
+    return int(match[1]) if match else None
 
 
 def find_or_create_customer(db: Session, data: OrderIn) -> Customer:
