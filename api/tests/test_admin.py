@@ -25,7 +25,7 @@ def set_status(admin_client, order_id, status):
     return admin_client.post(f"/api/admin/orders/{order_id}/status", json={"status": status})
 
 
-# An empty list would make the next test pass with no checks.
+# If the list is empty, the next test checks nothing.
 def test_guard_list_is_not_empty():
     assert GUARDED
 
@@ -89,7 +89,14 @@ def test_final_status_is_locked(admin_client, order, final):
 
 @pytest.mark.parametrize(
     "q,found",
-    [("rp-00001", 1), ("1", 1), ("asha", 1), ("asha@example", 1), ("99999999999999999999", 0)],
+    [
+        ("rp-00001", 1),
+        ("1", 1),
+        ("asha", 1),
+        ("asha@example", 1),
+        ("9841234567", 1),
+        ("99999999999999999999", 0),
+    ],
 )
 def test_order_search(admin_client, order, q, found):
     r = admin_client.get("/api/admin/orders", params={"q": q})

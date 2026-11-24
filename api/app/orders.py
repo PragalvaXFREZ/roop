@@ -29,7 +29,7 @@ FINAL = {OrderStatus.DELIVERED, OrderStatus.CANCELLED}
 NUMBER = re.compile(r"(?:RP-)?([0-9]{1,9})", re.IGNORECASE)
 
 
-def order_id(number: str) -> int | None:
+def parse_number(number: str) -> int | None:
     """Read the order id from "RP-00042", "rp-42" or "42". Return None for other text."""
     match = NUMBER.fullmatch(number.strip())
     return int(match[1]) if match else None

@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.db import get_db
 from app.models import Category, Order, Product, ProductVariant
-from app.orders import order_id, place_order
+from app.orders import parse_number, place_order
 from app.schemas import (
     CatalogFilters,
     CategoryOut,
@@ -103,7 +103,7 @@ def create_order(data: OrderIn, db: Session = Depends(get_db)):
 @router.post("/orders/track", response_model=OrderReceipt)
 def track_order(data: TrackIn, db: Session = Depends(get_db)):
     """Find an order by its number and phone. The phone stops people from guessing numbers."""
-    number = order_id(data.number)
+    number = parse_number(data.number)
     order = db.get(Order, number) if number else None
     if not order or order.phone != data.phone:
         raise HTTPException(404, "No order matches that number and phone")

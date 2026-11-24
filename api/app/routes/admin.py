@@ -27,7 +27,7 @@ from app.models import (
     ProductVariant,
     now,
 )
-from app.orders import order_id, set_status
+from app.orders import parse_number, set_status
 from app.schemas import (
     AdminOut,
     AdminProduct,
@@ -127,7 +127,7 @@ def list_orders(
         query = query.where(Order.status == status)
     if q:
         term = f"%{q.strip()}%"
-        number = order_id(q)
+        number = parse_number(q)
         match = [Order.name.ilike(term), Order.phone.ilike(term), Order.email.ilike(term)]
         if number:
             match.append(Order.id == number)

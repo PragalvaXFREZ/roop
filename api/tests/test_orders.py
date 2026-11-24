@@ -41,7 +41,7 @@ def test_repeated_lines_merge(client, product, checkout):
     assert stock(client) == [0, 1]
 
 
-# The first line fits and the second does not. No stock may change.
+# The first line fits and the second does not. The stock must not change.
 def test_short_stock_changes_nothing(client, product, checkout):
     med, large = product.variants
     r = checkout([{"variant_id": med.id, "quantity": 1}, {"variant_id": large.id, "quantity": 2}])
