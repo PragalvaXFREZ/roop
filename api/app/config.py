@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     jwt_hours: int = 12
     cookie_secure: bool = False
     currency: str = "NPR"
+    timezone: str = "Asia/Kathmandu"  # The dashboard counts days in this zone.
     upload_dir: Path = API_DIR / "uploads"
     seed_admin_email: str = "admin@example.com"
     seed_admin_password: str = "change-me-now"

@@ -5,7 +5,8 @@ Every route except login needs a signed-in admin.
 """
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile
 from sqlalchemy import func, or_, select
@@ -25,7 +26,6 @@ from app.models import (
     Product,
     ProductImage,
     ProductVariant,
-    now,
 )
 from app.orders import parse_number, set_status
 from app.schemas import (
@@ -87,8 +87,16 @@ def me(admin: AdminUser = Depends(current_admin)):
 
 @guarded.get("/dashboard", response_model=Dashboard)
 def dashboard(db: Session = Depends(get_db)):
-    today = now().replace(hour=0, minute=0, second=0, microsecond=0)
-    month = today.replace(day=1)
+    # Find midnight in the shop time zone. Then change it to UTC, as the database uses.
+    local = datetime.now(ZoneInfo(settings.timezone))
+    midnight = local.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    def utc(moment: datetime) -> datetime:
+        return moment.astimezone(UTC).replace(tzinfo=None)
+
+    today = utc(midnight)
+    week = utc(midnight - timedelta(days=midnight.weekday()))
+    month = utc(midnight.replace(day=1))
 
     def count_since(start: datetime) -> int:
         return db.scalar(select(func.count(Order.id)).where(Order.created_at >= start))
@@ -102,7 +110,7 @@ def dashboard(db: Session = Depends(get_db)):
     recent = db.scalars(select(Order).order_by(Order.created_at.desc()).limit(8)).all()
     return Dashboard(
         orders_today=count_since(today),
-        orders_week=count_since(today - timedelta(days=today.weekday())),
+        orders_week=count_since(week),
         orders_month=count_since(month),
         revenue_month=revenue,
         by_status={s: by_status.get(s, 0) for s in OrderStatus},
