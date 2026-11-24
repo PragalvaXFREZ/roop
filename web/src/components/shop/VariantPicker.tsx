@@ -25,7 +25,7 @@ export function VariantPicker({ product }: { product: ProductDetail }) {
   const cart = useCart();
 
   const variant = variants.find((v) => v.size === size && v.color === color);
-  const inCart = cart.find((l) => l.variant_id === variant?.id)?.qty ?? 0;
+  const inCart = cart?.find((l) => l.variant_id === variant?.id)?.qty ?? 0;
   const limit = Math.min(variant?.stock ?? 0, MAX_QTY);
   const canAdd = !!variant && inCart < limit;
 

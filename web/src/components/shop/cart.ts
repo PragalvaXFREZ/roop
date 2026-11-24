@@ -59,9 +59,13 @@ function subscribe(listener: () => void) {
   };
 }
 
-/* The server has no cart. It renders an empty cart, and the browser fills it in. */
-export function useCart(): CartLine[] {
-  return useSyncExternalStore(subscribe, read, () => EMPTY);
+/*
+ * Get the cart lines.
+ * The server has no cart, so the value is null until the browser reads localStorage.
+ * Thus, a page can wait for the cart and not show "empty" first.
+ */
+export function useCart(): CartLine[] | null {
+  return useSyncExternalStore(subscribe, read, () => null);
 }
 
 /* Add the line, or add to its quantity. Do not go above the stock or MAX_QTY. */

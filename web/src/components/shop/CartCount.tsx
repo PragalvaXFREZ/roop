@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCart } from "./cart";
 
 export function CartCount() {
-  const count = useCart().reduce((sum, l) => sum + l.qty, 0);
+  const count = (useCart() ?? []).reduce((sum, l) => sum + l.qty, 0);
   return (
     <Link href="/cart" className="hover:underline">
       Cart{count > 0 && ` (${count})`}
