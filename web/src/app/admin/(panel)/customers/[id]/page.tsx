@@ -27,9 +27,9 @@ export default function CustomerPage() {
       </p>
       <Title>{c.name}</Title>
 
-      <div className="grid gap-8 lg:grid-cols-[3fr_2fr]">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="min-w-0 space-y-8">
-          <dl className="grid grid-cols-[8rem_1fr] gap-x-3 gap-y-1 text-sm [&_dt]:text-muted">
+          <dl className="grid grid-cols-[8rem_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm [&_dt]:text-muted">
             <dt>Phone</dt>
             <dd>{c.phone}</dd>
             <dt>Email</dt>

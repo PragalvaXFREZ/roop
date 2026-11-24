@@ -213,13 +213,16 @@ export function ProductForm({ product }: { product?: AdminProduct }) {
         <fieldset>
           <legend className="mb-2 font-semibold">Variants</legend>
           <div className="space-y-2">
-            <div className="grid grid-cols-[1fr_1fr_5rem_4.5rem] gap-2 text-sm text-muted">
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_4.5rem_5rem] gap-2 text-sm text-muted">
               <span>Size</span>
               <span>Colour</span>
               <span>Stock</span>
             </div>
             {rows.map((row, i) => (
-              <div key={i} className="grid grid-cols-[1fr_1fr_5rem_4.5rem] gap-2">
+              <div
+                key={i}
+                className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_4.5rem_5rem] gap-2"
+              >
                 <input
                   value={row.size}
                   onChange={(e) => setRow(i, { size: e.target.value })}
@@ -314,7 +317,7 @@ export function ProductForm({ product }: { product?: AdminProduct }) {
           <h2 className="mb-2 font-semibold">Delete product</h2>
           {confirmDelete ? (
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span>Delete {product.name}? You cannot undo this.</span>
+              <span>Delete {form.name}? You cannot undo this.</span>
               <button type="button" onClick={remove} disabled={busy} className={danger}>
                 Yes, delete
               </button>

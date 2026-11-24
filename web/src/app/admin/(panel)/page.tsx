@@ -28,7 +28,7 @@ export default function DashboardPage() {
         {totals.map(([label, value]) => (
           <div key={label} className="bg-surface px-4 py-3">
             <dt className="text-sm text-muted">{label}</dt>
-            <dd className="mt-1 text-2xl font-semibold">{value}</dd>
+            <dd className="mt-1 text-xl font-semibold sm:text-2xl">{value}</dd>
           </div>
         ))}
       </dl>

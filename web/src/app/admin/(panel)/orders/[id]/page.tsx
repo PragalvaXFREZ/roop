@@ -46,7 +46,7 @@ export default function OrderPage() {
       </Title>
       <p className="-mt-3 mb-5 text-sm text-muted">Placed {when(order.created_at)}</p>
 
-      <div className="grid gap-8 lg:grid-cols-[3fr_2fr]">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="min-w-0 space-y-8">
           <Items order={order} />
           {order.customer_note && (
@@ -258,7 +258,7 @@ function Contact({ order, onChange }: { order: OrderDetail; onChange: Change }) 
     return (
       <section>
         {heading}
-        <dl className="grid grid-cols-[6rem_1fr] gap-x-3 gap-y-1 text-sm [&_dt]:text-muted">
+        <dl className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm [&_dt]:text-muted">
           <dt>Name</dt>
           <dd>{order.name}</dd>
           <dt>Phone</dt>
