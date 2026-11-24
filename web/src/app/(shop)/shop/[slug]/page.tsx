@@ -51,12 +51,9 @@ async function Product({ params }: Pick<PageProps<"/shop/[slug]">, "params">) {
       <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto md:flex-col md:overflow-visible">
         {product.images.length > 0 ? (
           product.images.map((img, i) => (
-            <ProductImage
-              key={img.id}
-              src={img.url}
-              alt={`${product.name}, photo ${i + 1}`}
-              className={`shrink-0 snap-start ${product.images.length > 1 ? "w-[85%] md:w-full" : ""}`}
-            />
+            <div key={img.id} className={`shrink-0 snap-start ${product.images.length > 1 ? "w-[85%] md:w-full" : "w-full"}`}>
+              <ProductImage src={img.url} alt={`${product.name}, photo ${i + 1}`} />
+            </div>
           ))
         ) : (
           <ProductImage src={null} alt={product.name} />

@@ -151,7 +151,8 @@ function readQuery(params: Record<string, string | string[] | undefined>): Query
     const value = params[key];
     return ((Array.isArray(value) ? value[0] : value) ?? "").trim();
   };
-  const rupees = (key: string) => (/^\d+$/.test(get(key)) ? get(key) : "");
+  /* Accept whole rupees only. Nine digits is enough, and a longer number breaks the API query. */
+  const rupees = (key: string) => (/^\d{1,9}$/.test(get(key)) ? get(key) : "");
   const sort = get("sort");
   return {
     q: get("q"),

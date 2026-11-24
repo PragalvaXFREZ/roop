@@ -7,7 +7,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { api, ApiError, type OrderIn, type OrderReceipt } from "@/lib/api";
 import { clearCart, useCart } from "./cart";
 import { EmptyCart } from "./CartView";
@@ -41,6 +41,18 @@ export function CheckoutForm() {
   /* After success, the cart is empty. This flag stops the "empty cart" text before the next page shows. */
   const [placed, setPlaced] = useState(false);
 
+  /*
+   * Next.js keeps a hidden page and its state after the customer leaves it.
+   * Thus, reset the flags when the page goes hidden. Then a return visit shows the form.
+   */
+  useLayoutEffect(
+    () => () => {
+      setPlaced(false);
+      setBusy(false);
+    },
+    [],
+  );
+
   if (placed) return <p className="mt-8 text-muted">Opening your receipt…</p>;
   if (!cart) return <div className="mt-8 h-64 bg-line" aria-hidden />;
   if (cart.length === 0) return <EmptyCart />;
@@ -69,7 +81,8 @@ export function CheckoutForm() {
       saveReceipt(receipt);
       setPlaced(true);
       clearCart();
-      router.push(`/order/${receipt.number}`);
+      /* Replace the history entry, so that the back button does not open checkout again. */
+      router.replace(`/order/${receipt.number}`);
     } catch (error) {
       setServerError(error instanceof ApiError ? error.message : "We could not send your order. Check your connection and try again.");
       setBusy(false);
