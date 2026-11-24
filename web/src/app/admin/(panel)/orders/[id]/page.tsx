@@ -11,7 +11,18 @@ import { api, STATUS_FLOW, STATUS_LABEL, type OrderDetail, type OrderStatus } fr
 import { money } from "@/lib/config";
 import { Notes } from "@/components/admin/notes";
 import { useLoad } from "@/components/admin/use-load";
-import { button, danger, Field, input, primary, Status, Table, Title, Wait, when } from "@/components/admin/ui";
+import {
+  button,
+  danger,
+  Field,
+  input,
+  primary,
+  Status,
+  Table,
+  Title,
+  Wait,
+  when,
+} from "@/components/admin/ui";
 
 /* The API does not let staff change a delivered or cancelled order. */
 const FINAL: OrderStatus[] = ["delivered", "cancelled"];
@@ -156,11 +167,7 @@ function StatusControl({ order, onChange }: { order: OrderDetail; onChange: Chan
               </option>
             ))}
           </select>
-          <button
-            onClick={() => change(other as OrderStatus)}
-            disabled={!other}
-            className={button}
-          >
+          <button onClick={() => change(other as OrderStatus)} disabled={!other} className={button}>
             Set
           </button>
         </div>
@@ -284,7 +291,13 @@ function Contact({ order, onChange }: { order: OrderDetail; onChange: Change }) 
           <input name="email" type="email" defaultValue={order.email ?? ""} className={input} />
         </Field>
         <Field label="Address">
-          <textarea name="address" defaultValue={order.address} required rows={2} className={input} />
+          <textarea
+            name="address"
+            defaultValue={order.address}
+            required
+            rows={2}
+            className={input}
+          />
         </Field>
         <Field label="City">
           <input name="city" defaultValue={order.city} required className={input} />

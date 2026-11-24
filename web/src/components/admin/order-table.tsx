@@ -25,7 +25,10 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
         {orders.map((o) => (
           <tr key={o.id}>
             <td>
-              <Link href={`/admin/orders/${o.id}`} className="font-medium underline underline-offset-2">
+              <Link
+                href={`/admin/orders/${o.id}`}
+                className="font-medium underline underline-offset-2"
+              >
                 {o.number}
               </Link>
             </td>

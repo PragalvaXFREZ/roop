@@ -54,7 +54,10 @@ export default function CustomersPage() {
             {data.map((c) => (
               <tr key={c.id}>
                 <td>
-                  <Link href={`/admin/customers/${c.id}`} className="font-medium underline underline-offset-2">
+                  <Link
+                    href={`/admin/customers/${c.id}`}
+                    className="font-medium underline underline-offset-2"
+                  >
                     {c.name}
                   </Link>
                 </td>
